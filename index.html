@@ -39,7 +39,7 @@
             const dataUrl = canvas.toDataURL('image/png');
 
             // Send the photo to the Flask backend
-            fetch('/upload', {
+            fetch('https://yourappname.onrender.com/upload', { // Updated URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
