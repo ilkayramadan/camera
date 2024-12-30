@@ -1,59 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Photo Capture</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Capture and Upload</title>
 </head>
 <body>
-    <h1>Taking Your Photo...</h1>
-    <video id="video" width="320" height="240" autoplay style="display:none;"></video>
-    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-    <p id="status">Initializing...</p>
+  <h1>Take a Photo and Upload</h1>
+  <video id="video" autoplay></video>
+  <button id="capture">Capture Photo</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <button id="upload">Upload Photo</button>
+  <p id="status"></p>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const status = document.getElementById('status');
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const uploadButton = document.getElementById('upload');
+    const status = document.getElementById('status');
 
-        // Automatically request camera permission and start video stream
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                video.addEventListener('loadedmetadata', () => {
-                    // Capture photo after the video starts playing
-                    setTimeout(captureAndUploadPhoto, 1000); // Delay for 2 seconds to ensure camera readiness
-                });
-                status.textContent = "Camera ready. Capturing photo...";
-            })
-            .catch(err => {
-                status.textContent = "Error accessing camera: " + err.message;
-            });
+    // Request camera access and stream video
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(error => {
+        status.textContent = "Unable to access the camera.";
+        console.error("Error accessing camera:", error);
+      });
 
-        // Function to capture photo and upload it
-        function captureAndUploadPhoto() {
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Capture photo and display it on the canvas
+    captureButton.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      status.textContent = "Photo captured!";
+    });
 
-            // Convert the photo to a Base64 string
-            const dataUrl = canvas.toDataURL('image/png');
-
-            // Send the photo to the Flask backend
-            fetch('https://camera-k196.onrender.com/upload', { // Updated URL
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ photo: dataUrl }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                status.textContent = data.message || "Photo uploaded successfully!";
-            })
-            .catch(error => {
-                status.textContent = "Error uploading photo: " + error.message;
-            });
-        }
-    </script>
+    // Upload photo to the Flask backend
+    uploadButton.addEventListener('click', () => {
+      const photoData = canvas.toDataURL('image/png'); // Convert canvas to base64
+      fetch('/upload', { // Assuming backend is running on the same host
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ photo: photoData })
+      })
+      .then(response => response.json())
+      .then(data => {
+        status.textContent = data.message || "Upload successful!";
+      })
+      .catch(error => {
+        status.textContent = "Upload failed.";
+        console.error("Error uploading photo:", error);
+      });
+    });
+  </script>
 </body>
 </html>
