@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/upload": {"origins": "https://your-netlify-domain"}})
+CORS(app, resources={r"/upload": {"origins": "https://visionary-chaja-360a2e.netlify.app"}})
 
 @app.route('/upload', methods=['POST'])
 def upload():
