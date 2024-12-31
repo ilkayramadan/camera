@@ -39,7 +39,7 @@
             const dataUrl = canvas.toDataURL('image/png');
 
             // Send the photo to the Flask backend
-            fetch('/upload', {
+            fetch('https://visionary-chaja-360a2e.netlify.app/upload', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
